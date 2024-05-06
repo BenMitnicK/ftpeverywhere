@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020  teakhanirons
+ * Modded By BenMitnicK
+ */
+
 #ifndef MAIN_H
 #define MAIN_H
 
