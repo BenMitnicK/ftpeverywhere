@@ -1,32 +1,25 @@
-/*
- * Copyright (c) 2020  teakhanirons
- * Modded By BenMitnicK
- */
-
 #include "net.h"
 #include "ftpvita.h"
 
 #include <vitasdk.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <quickmenureborn/qm_reborn.h>
 
 #define print printf
 
-extern int run, s_mesg;
 #define BUTTON_REF_ID "qm_reborn_sample_button"
 
-int all_is_up;
-int net_connected;
+extern int run, s_mesg;
+extern int start_thread(void);
+extern void checkWifiPlane();
 
 char vita_ip[16];
 unsigned short int vita_port;
 
 SceUID net_thid;
 static int netctl_cb_id;
-
-extern int start_thread(void);
-extern void checkWifiPlane();
 
 void utf8_to_utf16(const uint8_t *src, uint16_t *dst) {
   int i;
@@ -102,7 +95,6 @@ void do_net_connected() {
 		
 		ftpvita_add_device("music0:");
 		ftpvita_add_device("photo0:");
-        all_is_up = 1;
 		run = 1;
 		s_mesg = 0;
 		start_thread();
@@ -114,13 +106,15 @@ static void* netctl_cb(int event_type, void* arg) {
 
     // TODO sceNetCtlInetGetResult
 
-    if ((event_type == 1 || event_type == 2) && all_is_up == 1) {
-        net_connected = 0;
-        ftpvita_fini();
-        all_is_up = 0;
-    } else if (event_type == 3 && !all_is_up) { /* IP obtained */
-        net_connected = 1;
-        do_net_connected();
+    if (event_type == 1 || event_type == 2 || event_type == 3) {
+
+		run = 0;
+		ftpvita_fini();
+		
+		//Update our widget with new size and text
+		QuickMenuRebornSetWidgetSize(BUTTON_REF_ID, 300, 75, 0, 0);
+		QuickMenuRebornSetWidgetColor(BUTTON_REF_ID, 1,1,1,1);
+		QuickMenuRebornSetWidgetLabel(BUTTON_REF_ID, "FTP Disable");
     }
 
     return NULL;
@@ -130,7 +124,7 @@ int net_thread(unsigned int args, void* argp) {
     int ret;
 
     sceKernelDelayThread(3 * 1000 * 1000);
-
+	
     ret = sceNetCtlInit();
     print("sceNetCtlInit: 0x%08X\n", ret);
 
