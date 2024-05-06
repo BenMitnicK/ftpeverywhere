@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2015-2016 Sergi Granell (xerpi)
- * Modded By BenMitnicK
  */
 
 #include "ftpvita.h"
@@ -58,7 +57,6 @@ static struct {
 	int valid;
 } custom_command_dispatchers[MAX_CUSTOM_COMMANDS];
 
-//unsigned long fileSize = 0;
 int ftp_ProgressBar;
 char ftp_file_transfer[256];
 
@@ -75,7 +73,7 @@ static SceUID client_list_mtx;
 static int netctl_init = -1;
 static int net_init = -1;
 
-extern bool ftpON;
+extern bool NotifsON;
 
 static void(*notif_log_cb)(const char *) = NULL;
 static void (*info_log_cb)(const char *) = NULL;
@@ -549,7 +547,7 @@ static void send_file(ftpvita_client_info_t *client, const char *path)
 		sceIoClose(fd);
 		free(buffer);
 		client->restore_point = 0;
-		if(ftpON)
+		if(NotifsON)
 		NOTIFICATION("Send: %s", strrchr(path, '/') + 1);
 	
 		client_send_ctrl_msg(client, "226 Transfer completed." FTPVITA_EOL);
@@ -625,14 +623,14 @@ static void receive_file(ftpvita_client_info_t *client, const char *path)
 		free(buffer);
 		client->restore_point = 0;
 		if (bytes_recv == 0) {
-			if(ftpON)
+			if(NotifsON)
 			NOTIFICATION("Received: %s", strrchr(path, '/') + 1);
 		
 			sprintf(ftp_file_transfer, "%s", "");
 			client_send_ctrl_msg(client, "226 Transfer completed." FTPVITA_EOL);
 		} else {
 			sceIoRemove(path);
-			if(ftpON)
+			if(NotifsON)
 			NOTIFICATION("Not Received: %s", strrchr(path, '/') + 1);
 		
 			client_send_ctrl_msg(client, "426 Connection closed; transfer aborted." FTPVITA_EOL);
@@ -655,7 +653,7 @@ static void delete_file(ftpvita_client_info_t *client, const char *path)
 	DEBUG("Deleting: %s\n", path);
 
 	if (sceIoRemove(path) >= 0) {
-		if(ftpON)
+		if(NotifsON)
 		NOTIFICATION("File(s) Deleted: %s", strrchr(path, '/') + 1);
 	
 		client_send_ctrl_msg(client, "226 File deleted." FTPVITA_EOL);
@@ -677,7 +675,7 @@ static void delete_dir(ftpvita_client_info_t *client, const char *path)
 	DEBUG("Deleting: %s\n", path);
 	ret = sceIoRmdir(path);
 	if (ret >= 0) {
-		if(ftpON)
+		if(NotifsON)
 		NOTIFICATION("Directory Deleted: %s", strrchr(path, '/') + 1);
 	
 		client_send_ctrl_msg(client, "226 Directory deleted." FTPVITA_EOL);
@@ -700,7 +698,7 @@ static void create_dir(ftpvita_client_info_t *client, const char *path)
 	DEBUG("Creating: %s\n", path);
 
 	if (sceIoMkdir(path, 0777) >= 0) {
-		if(ftpON)
+		if(NotifsON)
 		NOTIFICATION("Directory Created: %s", strrchr(path, '/') + 1);
 	
 		client_send_ctrl_msg(client, "226 Directory created." FTPVITA_EOL);
@@ -749,7 +747,7 @@ static void cmd_RNTO_func(ftpvita_client_info_t *client)
 	if (sceIoRename(client->rename_path, vita_path_dst) < 0) {
 		client_send_ctrl_msg(client, "550 Error renaming the file." FTPVITA_EOL);
 	}
-	if(ftpON)
+	if(NotifsON)
 	NOTIFICATION("Renamed: %s To %s", strrchr(vita_path_act, '/') + 1, strrchr(vita_path_dst, '/') + 1);
 
 	client_send_ctrl_msg(client, "226 Rename completed." FTPVITA_EOL);
