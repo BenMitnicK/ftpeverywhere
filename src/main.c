@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020  teakhanirons
+ * Modded By BenMitnicK
+ */
+
 #include <psp2/kernel/modulemgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <stdarg.h>
