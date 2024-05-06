@@ -32,15 +32,7 @@ int run, s_mesg;
 #define PLANE_ID "qm_reborn_sample_plane"
 #define TEXT_ID "qm_reborn_sample_text"
 #define CHECKBOX_TEXT_ID "qm_reborn_sample_checkbox_text"
-#define SLIDEBAR_ID "qm_reborn_sample_slidebar"
 #define SEPARATOR_ID "qm_reborn_sample_separator"
-#define TEX_PLANE_ID "qm_reborn_sample_plane_for_tex"
-#define TEXTURE_REF_ID "qm_reborn_sample_texture"
-
-#define BUTTON2_REF_ID "qm_reborn_sample_button"
-#define CHECKBOX_NOTIF_ID "qm_reborn_sample_checkbox"
-#define PLANE_NOTIF_ID "qm_reborn_sample_plane"
-#define CHECKBOX_NOTIF_TEXT_ID "qm_reborn_sample_checkbox_text"
 
 //Declare our boolean
 bool NotifsON = false;
