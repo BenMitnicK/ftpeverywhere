@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020  teakhanirons
+ * Modded By BenMitnicK
+ */
+
 #include "net.h"
 #include "ftpvita.h"
 
