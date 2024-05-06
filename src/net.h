@@ -8,11 +8,8 @@
 
 #include <stdio.h>
 
-extern int all_is_up;
-
 extern char vita_ip[16];
 extern unsigned short int vita_port;
-extern int all_is_up;
 
 void net_start();
 void net_end();
