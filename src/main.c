@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2020  teakhanirons
- * Modded By BenMitnicK
- */
-
 #include <psp2/kernel/modulemgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <stdarg.h>
@@ -26,8 +21,6 @@
 #define	USER_MESSAGE_THREAD_TIME	(2000000)	// 2 sec
 
 extern SceUID net_thid;
-extern int all_is_up;
-extern int net_connected;
 
 static SceUID	s_msgThreadId;
 
@@ -50,14 +43,10 @@ int run, s_mesg;
 #define CHECKBOX_NOTIF_TEXT_ID "qm_reborn_sample_checkbox_text"
 
 //Declare our boolean
-bool ftpON = false;
-bool resetOnExit = false;
-
-//Set our current count
-int count = 0;
+bool NotifsON = false;
 
 typedef struct SceAppMgrEvent {
-	int		event;			// Event ID 
+	int	event;			// Event ID 
 	SceUID	appId;			// Application ID. Added when required by the event 
 	char	param[56];		// Parameters to pass with the event 
 } SceAppMgrEvent;
@@ -97,41 +86,27 @@ void checkWifiPlane(){
 
 //Declare our function that will act as the callback for when our button is pressed, Format: BUTTON_HANDLER(name of function)
 BUTTON_HANDLER(onPress)
-{
-		
+{	
 	if(run){
 		run = 0;
 		ftpvita_fini();
 		start_thread();
-		//Update our widget with new size and text
-		QuickMenuRebornSetWidgetSize(BUTTON_REF_ID, 300, 75, 0, 0);
-		QuickMenuRebornSetWidgetColor(BUTTON_REF_ID, 1,1,1,1);
-		QuickMenuRebornSetWidgetLabel(BUTTON_REF_ID, "FTP Disable");
 	}else{
 		checkWifiPlane();
-		run = 1;
 		do_net_connected();
-		if(all_is_up)
-		{
-			//Update our widget with new size and text
-			QuickMenuRebornSetWidgetSize(BUTTON_REF_ID, 300, 75, 0, 0);
-			QuickMenuRebornSetWidgetColor(BUTTON_REF_ID, 0,1,0,1);
-			QuickMenuRebornSetWidgetLabel(BUTTON_REF_ID, "FTP Enable");
-		}
 	}
-    
 }
 
 ONLOAD_HANDLER(OnButtonLoad)
 {    
     if(run)
     {
-        //Update our widget with new size and text
+        // Update our widget
         QuickMenuRebornSetWidgetSize(BUTTON_REF_ID, 300, 75, 0, 0);
-		QuickMenuRebornSetWidgetColor(BUTTON_REF_ID, 0,1,0,1);
-		QuickMenuRebornSetWidgetLabel(BUTTON_REF_ID, "FTP Enable");
+	QuickMenuRebornSetWidgetColor(BUTTON_REF_ID, 0,1,0,1);
+	QuickMenuRebornSetWidgetLabel(BUTTON_REF_ID, "FTP Enable");
     }else{
-		//Update our widget with new size and text
+		// Update our widget
 		QuickMenuRebornSetWidgetSize(BUTTON_REF_ID, 300, 75, 0, 0);
 		QuickMenuRebornSetWidgetColor(BUTTON_REF_ID, 1,1,1,1);
 		QuickMenuRebornSetWidgetLabel(BUTTON_REF_ID, "FTP Disable");
@@ -140,7 +115,7 @@ ONLOAD_HANDLER(OnButtonLoad)
 
 BUTTON_HANDLER(OnToggleCheckBox)
 {
-    ftpON = QuickMenuRebornGetCheckboxValue(CHECKBOX_REF_ID);
+    NotifsON = QuickMenuRebornGetCheckboxValue(CHECKBOX_REF_ID);
 }
 
 SceInt32 thread_user_message(SceSize args, void *argc)
@@ -150,13 +125,13 @@ SceInt32 thread_user_message(SceSize args, void *argc)
 
 	if(run){
 		sprintf(sendNotifText, "IP: %s\nPort: %i", vita_ip, vita_port);
-		//Update our widget with new size and text
+		// Set Values
 		QuickMenuRebornSetWidgetSize(BUTTON_REF_ID, 300, 75, 0, 0);
 		QuickMenuRebornSetWidgetColor(BUTTON_REF_ID, 0,1,0,1);
 		QuickMenuRebornSetWidgetLabel(BUTTON_REF_ID, "FTP Enable");
 	}else{
 		sprintf(sendNotifText, "FTPEveryWhere Disable");
-		//Set new values
+		// Set values
 		QuickMenuRebornSetWidgetSize(BUTTON_REF_ID, 300, 75, 0, 0);
 		QuickMenuRebornSetWidgetColor(BUTTON_REF_ID, 1,1,1,1);
 		QuickMenuRebornSetWidgetLabel(BUTTON_REF_ID, "FTP Disable");
@@ -198,7 +173,7 @@ int __unused module_start(SceSize argc, const void* args) {
 
     //Get our checkboxes saved state
     int ret = QuickMenuRebornGetCheckboxValue(CHECKBOX_REF_ID);
-    ftpON = ret == QMR_CONFIG_MGR_ERROR_NOT_EXIST ? false : ret;
+    NotifsON = ret == QMR_CONFIG_MGR_ERROR_NOT_EXIST ? false : ret;
 
     QuickMenuRebornRegisterWidget(TEXT_ID, NULL, text);
     QuickMenuRebornSetWidgetSize(TEXT_ID, SCE_PLANE_WIDTH, 50, 0, 0);
@@ -233,7 +208,6 @@ int __unused module_start(SceSize argc, const void* args) {
     QuickMenuRebornAssignOnLoadHandler(OnButtonLoad, BUTTON_REF_ID);
     
 	taipool_init(1 * 1024 * 1024); // user plugins can't malloc without Libc which is not available in main
-	run = 1;
 	net_start();
 		
 	sceSysmoduleLoadModule(SCE_SYSMODULE_NOTIFICATION_UTIL);
@@ -250,7 +224,7 @@ int __unused module_stop(SceSize argc, const void* args) {
     run = 0;
     sceKernelWaitThreadEnd(net_thid, NULL, NULL);
 
-    if (all_is_up) {
+    if (run) {
         net_end();
     }
 
